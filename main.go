@@ -9,15 +9,24 @@ import (
 	"regexp"
 )
 
+// screenshotPattern is the regex pattern used to match macOS screenshot filenames
+const screenshotPattern = "^(Screen Shot|Screenshot) \\d{4}-\\d{2}-\\d{2} at \\d{1,2}\\.\\d{2}\\.\\d{2}[\\s\u202F]*(AM|PM)\\.png$"
+
 func main() {
 	// Define command-line flags for source and destination folders.
 	srcFolder := flag.String("src", "", "Source folder to search for screenshots")
 	destFolder := flag.String("dest", "", "Destination folder to move screenshots")
+	dryRun := flag.Bool("dry-run", false, "Show what would be done without actually moving files")
 
+	flag.Parse()
 	// Validate that both source and destination folders are provided.
 	if *srcFolder == "" || *destFolder == "" {
-		fmt.Println("Usage: go run main.go -src=<source folder> -dest=<destination folder>")
+		fmt.Println("Usage: go run main.go -src=<source folder> -dest=<destination folder> [-dry-run]")
 		return
+	}
+
+	if *dryRun {
+		fmt.Println("Running in dry run mode")
 	}
 
 	// Check that the source folder exists.
@@ -26,18 +35,16 @@ func main() {
 	}
 
 	// Create the destination folder if it does not exist.
-	if stat, err := os.Stat(*destFolder); os.IsNotExist(err) || !stat.IsDir() {
-		err := os.MkdirAll(*destFolder, os.ModePerm)
-		if err != nil {
-			log.Fatalf("Failed to create destination folder: %v", err)
+	if !*dryRun {
+		if stat, err := os.Stat(*destFolder); os.IsNotExist(err) || !stat.IsDir() {
+			err := os.MkdirAll(*destFolder, os.ModePerm)
+			if err != nil {
+				log.Fatalf("Failed to create destination folder: %v", err)
+			}
 		}
 	}
 
-	// Define a regular expression to match filenames of the format:
-	// "Screenshot YYYY-MM-DD at H.MM.SS AM|PM.png"
-	// For example: "Screenshot 2025-03-28 at 4.34.27 PM.png"
-	pattern := `^Screenshot \d{4}-\d{2}-\d{2} at \d{1,2}\.\d{2}\.\d{2}\s*(AM|PM)\.png$`
-	re := regexp.MustCompile(pattern)
+	re := regexp.MustCompile(screenshotPattern)
 
 	// Read all items in the source folder.
 	entries, err := os.ReadDir(*srcFolder)
@@ -49,6 +56,7 @@ func main() {
 	for _, entry := range entries {
 		// Skip directories.
 		if entry.IsDir() {
+			fmt.Printf("Skipping directory %s\n", entry.Name())
 			continue
 		}
 
@@ -58,12 +66,16 @@ func main() {
 			srcPath := filepath.Join(*srcFolder, fileName)
 			destPath := filepath.Join(*destFolder, fileName)
 
-			// Move (rename) the file to the destination folder.
-			err := os.Rename(srcPath, destPath)
-			if err != nil {
-				log.Printf("Failed to move file %s: %v", fileName, err)
+			if *dryRun {
+				fmt.Printf("[DRY RUN] Would move %s to %s\n", fileName, *destFolder)
 			} else {
-				fmt.Printf("Moved %s to %s\n", fileName, *destFolder)
+				// Move (rename) the file to the destination folder.
+				err := os.Rename(srcPath, destPath)
+				if err != nil {
+					log.Printf("Failed to move file %s: %v", fileName, err)
+				} else {
+					fmt.Printf("Moved %s to %s\n", fileName, *destFolder)
+				}
 			}
 		}
 	}
