@@ -29,3 +29,32 @@ The regex pattern handles edge cases like narrow no-break space characters (U+20
 - Supports dry-run mode for safe testing
 - Skips directories in source folder
 - Handles both regular spaces and narrow no-break spaces in filenames
+
+## Development Workflow
+
+- Before making any changes, create a branch with a concise descriptive name based on the goals of the changes
+- Always create a pull request instead of pushing to the main branch
+
+## Development Best Practices
+
+- Always use TDD, always add tests
+
+## Pull Request Guidelines
+
+- Always write a concise but thorough pull request description, in the form:
+
+# Summary
+
+...
+
+# Major commit changes
+
+* ...
+* ...
+* ...
+
+# How testing was performed
+
+<test-types> ... </test-types>
+
+<output>from any manual or integration tests that prove the tests passed or the functionality is working; always in markdown!</output>
