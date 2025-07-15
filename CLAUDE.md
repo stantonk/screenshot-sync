@@ -55,6 +55,14 @@ The regex pattern handles edge cases like narrow no-break space characters (U+20
 
 # How testing was performed
 
-<test-types> ... </test-types>
+**Unit Tests**: Description of unit tests performed
+- List individual test cases and what they verify
 
-<output>from any manual or integration tests that prove the tests passed or the functionality is working; always in markdown!</output>
+**Integration Tests**: Description of integration tests performed  
+- List integration test scenarios
+
+**Manual Testing**: Description of manual testing performed
+
+```
+Output from test runs showing tests passed or functionality working
+```
